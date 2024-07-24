@@ -3,6 +3,7 @@ import glob
 import logging
 import numpy as np
 import os
+import shutil
 import tempfile
 from collections import OrderedDict
 import torch
@@ -68,6 +69,7 @@ class CityscapesInstanceEvaluator(CityscapesEvaluator):
             if "instances" in output:
                 output = output["instances"].to(self._cpu_device)
                 num_instances = len(output)
+                
                 with open(pred_txt, "w") as fout:
                     for i in range(num_instances):
                         pred_class = output.pred_classes[i]
@@ -83,6 +85,7 @@ class CityscapesInstanceEvaluator(CityscapesEvaluator):
                         fout.write(
                             "{} {} {}\n".format(os.path.basename(png_filename), class_id, score)
                         )
+
             else:
                 # Cityscapes requires a prediction file for every ground truth image.
                 with open(pred_txt, "w") as fout:
@@ -186,6 +189,18 @@ class CityscapesSemSegEvaluator(CityscapesEvaluator):
         results = cityscapes_eval.evaluateImgLists(
             predictionImgList, groundTruthImgList, cityscapes_eval.args
         )
+        destination_dir = '/content/SeMask-Segmentation-Acdc/SeMask-Mask2Former/results'
+        src_folder = self._temp_dir
+                # Ensure the destination directory exists
+        os.makedirs(destination_dir, exist_ok=True)
+        for file_name in os.listdir(src_folder):
+        # Construct full file path
+          full_file_name = os.path.join(src_folder, file_name)
+          if os.path.isfile(full_file_name):
+            # Copy the file to the destination folder
+            shutil.copy(full_file_name, destination_dir)
+            print(f'Copied: {full_file_name} to {destination_dir}')
+        print("All files have been copied successfully.")
         ret = OrderedDict()
         ret["sem_seg"] = {
             "IoU": 100.0 * results["averageScoreClasses"],
