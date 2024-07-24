@@ -35,15 +35,15 @@ def _get_cityscapes_files(image_dir, gt_dir):
         for basename in PathManager.ls(city_img_dir):
             image_file = os.path.join(city_img_dir, basename)
 
-            suffix = "leftImg8bit.png"
+            suffix = "rgb_anon.png"
             assert basename.endswith(suffix), basename
             basename = basename[: -len(suffix)]
 
-            instance_file = os.path.join(city_gt_dir, basename + "gtFine_instanceIds.png")
-            label_file = os.path.join(city_gt_dir, basename + "gtFine_labelIds.png")
-            json_file = os.path.join(city_gt_dir, basename + "gtFine_polygons.json")
+            # instance_file = os.path.join(city_gt_dir, basename + "gtFine_instanceIds.png")
+            label_file = os.path.join(city_gt_dir, basename + "gt_labelIds.png")
+            # json_file = os.path.join(city_gt_dir, basename + "gtFine_polygons.json")
 
-            files.append((image_file, instance_file, label_file, json_file))
+            files.append((image_file, label_file))
     assert len(files), "No images found in {}".format(image_dir)
     for f in files[0]:
         assert PathManager.isfile(f), f
@@ -105,17 +105,17 @@ def load_cityscapes_semantic(image_dir, gt_dir):
     ret = []
     # gt_dir is small and contain many small files. make sense to fetch to local first
     gt_dir = PathManager.get_local_path(gt_dir)
-    for image_file, _, label_file, json_file in _get_cityscapes_files(image_dir, gt_dir):
+    for image_file, label_file in _get_cityscapes_files(image_dir, gt_dir):
         label_file = label_file.replace("labelIds", "labelTrainIds")
 
-        with PathManager.open(json_file, "r") as f:
-            jsonobj = json.load(f)
+        # with PathManager.open(json_file, "r") as f:
+        #     jsonobj = json.load(f)
         ret.append(
             {
                 "file_name": image_file,
                 "sem_seg_file_name": label_file,
-                "height": jsonobj["imgHeight"],
-                "width": jsonobj["imgWidth"],
+                "height": 1080,
+                "width": 1920,
             }
         )
     assert len(ret), f"No images found in {image_dir}!"

@@ -175,9 +175,9 @@ def register_all_lvis(root):
 
 # ==== Predefined splits for raw cityscapes images ===========
 _RAW_CITYSCAPES_SPLITS = {
-    "cityscapes_fine_{task}_train": ("cityscapes/leftImg8bit/train/", "cityscapes/gtFine/train/"),
-    "cityscapes_fine_{task}_val": ("cityscapes/leftImg8bit/val/", "cityscapes/gtFine/val/"),
-    "cityscapes_fine_{task}_test": ("cityscapes/leftImg8bit/test/", "cityscapes/gtFine/test/"),
+    "cityscapes_fine_{task}_train": ("cityscapes/rgb_anon/train/", "cityscapes/gtFine/train/"),
+    "cityscapes_fine_{task}_val": ("cityscapes/rgb_anon/val/", "cityscapes/gtFine/val/"),
+    "cityscapes_fine_{task}_test": ("cityscapes/rgb_anon/test/", "cityscapes/gtFine/test/"),
 }
 
 

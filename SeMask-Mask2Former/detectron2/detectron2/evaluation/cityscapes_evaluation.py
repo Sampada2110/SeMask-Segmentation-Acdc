@@ -174,7 +174,7 @@ class CityscapesSemSegEvaluator(CityscapesEvaluator):
         # These lines are adopted from
         # https://github.com/mcordts/cityscapesScripts/blob/master/cityscapesscripts/evaluation/evalPixelLevelSemanticLabeling.py # noqa
         gt_dir = PathManager.get_local_path(self._metadata.gt_dir)
-        groundTruthImgList = glob.glob(os.path.join(gt_dir, "*", "*_gtFine_labelIds.png"))
+        groundTruthImgList = glob.glob(os.path.join(gt_dir, "*", "*_gt_labelIds.png"))
         assert len(
             groundTruthImgList
         ), "Cannot find any ground truth images to use for evaluation. Searched for: {}".format(

@@ -325,7 +325,11 @@ class SeMaskSetCriterion(nn.Module):
             loss_cate = torch.tensor([0], dtype=outputs["pred_logits"].dtype).to(outputs["pred_logits"].device)
         else:
             gt_seg_targets = torch.cat([t["seg_maps"].unsqueeze(0) for t in targets], dim=0)
-            loss_cate = F.cross_entropy(src_logits, gt_seg_targets, ignore_index=255)
+            # Resize gt_seg_targets to match the spatial dimensions of src_logits
+            gt_seg_targets_resized = F.interpolate(gt_seg_targets.unsqueeze(1).float(), 
+                                               size=src_logits.shape[2:], 
+                                               mode='nearest').long().squeeze(1)
+            loss_cate = F.cross_entropy(src_logits, gt_seg_targets_resized, ignore_index=255)
 
         losses = {"loss_cate": loss_cate}
         return losses
