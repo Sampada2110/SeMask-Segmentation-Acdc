@@ -5,6 +5,8 @@ inference_test_output
 
 
 *.png
+!/datasets/gt_trainval10all/*/*/*/*.png
+!/datasets/rgb_anon10all/*/*/*/*.png
 *.json
 *.diff
 *.jpg
