@@ -5,17 +5,6 @@ inference_test_output
 
 
 *.png
-!/datasets/
-!/datasets/gt_trainval10all/
-!/datasets/gt_trainval10all/*/
-!/datasets/gt_trainval10all/*/*/
-!/datasets/gt_trainval10all/*/*/*/
-!/datasets/gt_trainval10all/*/*/*/*.png
-!/datasets/rgb_anon10all/
-!/datasets/rgb_anon10all/*/
-!/datasets/rgb_anon10all/*/*/
-!/datasets/rgb_anon10all/*/*/*/
-!/datasets/rgb_anon10all/*/*/*/*.png
 *.json
 *.diff
 *.jpg
