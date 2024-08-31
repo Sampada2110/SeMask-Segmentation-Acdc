@@ -1,8 +1,0 @@
-matplotlib
-numpy
-terminaltables
-timm
-icecream
-einops
-scipy
-opencv-python
