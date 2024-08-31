@@ -14,8 +14,9 @@ MODEL:
     NORM: "SyncBN"  # use syncbn for cityscapes dataset
     RES5_MULTI_GRID: [1, 1, 1]  # not used
 DATASETS:
-  TRAIN: ("cityscapes_fine_sem_seg_train",)
-  TEST: ("cityscapes_fine_sem_seg_val",)
+  TRAIN: ("acdc_fine_sem_seg_train",)
+  TEST: ("acdc_fine_sem_seg_val",)
+  # TEST: ("acdc_fine_sem_seg_test",) # to evaluating on test images
 SOLVER:
   IMS_PER_BATCH: 1
   BASE_LR: 0.0001
@@ -45,11 +46,12 @@ INPUT:
     SIZE: (512, 1024)
     SINGLE_CATEGORY_MAX_AREA: 1.0
   COLOR_AUG_SSD: True
+  CUTMIX: True  #Newly added switch for cutmix
   SIZE_DIVISIBILITY: -1
   FORMAT: "RGB"
   DATASET_MAPPER_NAME: "mask_former_semantic"
 TEST:
-  EVAL_PERIOD: 10
+  EVAL_PERIOD: 5
   AUG:
     ENABLED: False
     MIN_SIZES: [512, 768, 1024, 1280, 1536, 1792]

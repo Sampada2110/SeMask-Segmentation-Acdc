@@ -118,3 +118,6 @@ def add_maskformer2_config(cfg):
     ## Semask additions
     cfg.MODEL.SWIN.SEM_WINDOW_SIZE = 7
     cfg.MODEL.SWIN.NUM_SEM_BLOCKS = 1
+
+    # CUTMIX augmentation
+    cfg.INPUT.CUTMIX = False

@@ -8,11 +8,14 @@ import copy
 import itertools
 import logging
 import os
+import numpy as np
 
 from collections import OrderedDict
 from typing import Any, Dict, List, Set
 
 import torch
+from torchvision.transforms import v2
+from PIL import Image
 
 import detectron2.utils.comm as comm
 from detectron2.checkpoint import DetectionCheckpointer
@@ -49,6 +52,58 @@ from mask2former import (
     SemanticSegmentorWithTTA,
     add_maskformer2_config,
 )
+
+def custom_cutmix(images, labels, alpha=1.0):
+    lam = np.random.beta(alpha, alpha)
+    batch_size = images.size()[0]
+    index = torch.randperm(batch_size)
+
+    y1, x1, y2, x2 = rand_bbox(images.size(), lam)
+    images[:, :, y1:y2, x1:x2] = images[index, :, y1:y2, x1:x2]
+    labels[:, y1:y2, x1:x2] = labels[index, y1:y2, x1:x2]
+
+    return images, labels
+
+
+def custom_mixup(images, labels, alpha=1.0):
+    lam = np.random.beta(alpha, alpha)
+    batch_size = images.size()[0]
+    index = torch.randperm(batch_size)
+
+    mixed_images = lam * images + (1 - lam) * images[index, :]
+    mixed_labels = lam * labels + (1 - lam) * labels[index, :]
+
+    return mixed_images, mixed_labels
+
+
+def rand_bbox(size, lam):
+    W = size[2]
+    H = size[3]
+    cut_rat = np.sqrt(1. - lam)
+    cut_w = int(W * cut_rat)
+    cut_h = int(H * cut_rat)
+
+    cx = np.random.randint(W)
+    cy = np.random.randint(H)
+
+    x1 = np.clip(cx - cut_w // 2, 0, W)
+    y1 = np.clip(cy - cut_h // 2, 0, H)
+    x2 = np.clip(cx + cut_w // 2, 0, W)
+    y2 = np.clip(cy + cut_h // 2, 0, H)
+
+    return y1, x1, y2, x2
+
+def save_images(images, destination_folder, prefix="image"):
+    os.makedirs(destination_folder, exist_ok=True)
+    for i in range(images.size(0)):
+        img = images[i].clamp(0, 1)  # Ensure values are in range [0, 1]
+        img = img.permute(1, 2, 0).cpu().numpy()  # Convert to NumPy array and reorder dimensions
+        img = (img * 255).astype(np.uint8)  # Convert to [0, 255] and uint8
+        
+        # Save image using PIL
+        filename = f"{prefix}_{i}.jpg"
+        Image.fromarray(img).save(os.path.join(destination_folder, filename))
+
 
 
 class Trainer(DefaultTrainer):
@@ -143,7 +198,40 @@ class Trainer(DefaultTrainer):
         # Semantic segmentation dataset mapper
         if cfg.INPUT.DATASET_MAPPER_NAME == "mask_former_semantic":
             mapper = MaskFormerSemanticDatasetMapper(cfg, True)
-            return build_detection_train_loader(cfg, mapper=mapper)
+            data_loader = build_detection_train_loader(cfg, mapper=mapper)
+            print("CUTMIX Flag: ",cfg.INPUT.CUTMIX)
+            if cfg.INPUT.CUTMIX:
+              x=0
+              for batch in data_loader:
+                images = torch.stack([item['image'] for item in batch])
+                labels = torch.stack([item['sem_seg'] for item in batch])
+                # Save original images
+                destination_folder = "/content/SeMask-Segmentation-Acdc/SeMask-Mask2Former/augs/original"
+                save_images(images, destination_folder, prefix="original_"+str(x))
+
+                print(f"Before CutMix/MixUp: {images.shape = }, {labels.shape = }")
+
+                if np.random.rand() < 0.5:
+                    cutimages, cutlabels = custom_cutmix(images, labels)
+                else:
+                    cutimages, cutlabels = custom_mixup(images, labels)
+                
+                # Save transformed images
+                destination_folder = "/content/SeMask-Segmentation-Acdc/SeMask-Mask2Former/augs/transformed"
+                save_images(cutimages, destination_folder, prefix="cutmix_"+str(x))
+                print(f"After CutMix/MixUp: {cutimages.shape = }, {cutlabels.shape = }")
+
+                # Optionally, update batch with transformed images and labels for further processing
+                for i, item in enumerate(batch):
+                    item['image'] = cutimages[i]
+                    item['sem_seg'] = cutlabels[i]
+                print(x)
+                if x==10:
+                  break   # Remove this break statement if you want to process the entire dataset
+                x+=1
+
+            
+            return data_loader
         # Panoptic segmentation dataset mapper
         elif cfg.INPUT.DATASET_MAPPER_NAME == "mask_former_panoptic":
             mapper = MaskFormerPanopticDatasetMapper(cfg, True)

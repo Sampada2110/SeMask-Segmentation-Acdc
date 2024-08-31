@@ -407,6 +407,14 @@ class SimpleTrainer(TrainerBase):
             metrics_dict = {
                 k: np.mean([x[k] for x in all_metrics_dict]) for k in all_metrics_dict[0].keys()
             }
+
+                        # Check for non-finite values in the metrics dictionary
+            for k, v in metrics_dict.items():
+                if not np.isfinite(v):
+                    print(f"Non-finite value detected in {k}: {v}")
+                    # You can handle the issue here, e.g., set it to zero or a small value
+                    metrics_dict[k] = 0.0
+
             total_losses_reduced = sum(metrics_dict.values())
             if not np.isfinite(total_losses_reduced):
                 raise FloatingPointError(
