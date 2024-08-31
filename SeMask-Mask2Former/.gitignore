@@ -4,11 +4,13 @@ instant_test_output
 inference_test_output
 
 
-*.png
+# *.png
 *.json
 *.diff
 *.jpg
 !/projects/DensePose/doc/images/*.jpg
+!/datasets/*.png
+
 
 # compilation and distribution
 __pycache__
